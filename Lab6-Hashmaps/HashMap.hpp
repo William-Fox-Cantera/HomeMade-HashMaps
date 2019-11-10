@@ -24,7 +24,7 @@ class hashMap {
 	 * and then you can either set map[i] = NULL or map[i] = new hashNode(k,v);
 	 * Make sure you originally set every address in the map array to NULL, and then when you rehash.
 	 *********************************************************************************/
-
+public:
 	string first; // for first keyword for printing to a file
 	int numKeys;
 	int mapSize;
@@ -33,7 +33,7 @@ class hashMap {
 	int collisionct1; //count of original collisions (caused by the hashing function used)
 	int collisionct2; //count of secondary collisions (caused by the collision handling method used)
 
-public:
+//public:
 	hashMap(bool hash1, bool coll1); // when creating the map, make sure you initialize the values to NULL
 // so you know whether that index has a key in it or not already. The Boolean values initialize the h1 and the c1
 // boolean values, making it easier to control which hash and which collision methods you use.
@@ -65,16 +65,18 @@ public:
 
 	void reHash(); // when size of array is at 70%, double array size and rehash keys
 
-	int collHash1(int h, int i, string k); // getting index with collision method 1 (note – you may modify the
+	int collHash1(int i, string k); // getting index with collision method 1 (note – you may modify the
 										   // parameters if you don’t need some/need more)
 
-	int collHash2(int h, int i, string k); // getting index with collision method 2 (note – you may modify the
+	int collHash2(int i, string k); // getting index with collision method 2 (note – you may modify the
 										   // parameters if you don’t need some/need more)
 
-	int findKey(string k); //finds the key in the array and returns its index. If it's not in the array,
+	int findKey(string k); // finds the key in the array and returns its index. If it's not in the array,
 						   // returns -1
 
-	void printMap(); //I wrote this solely to check if everything was working.
+	void printMap(); // I wrote this solely to check if everything was working.
+
+	bool isPrime(int x); // Simple is prime method
 };
 
 #endif /* HASHMAP_HPP_ */

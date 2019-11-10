@@ -5,9 +5,14 @@
  *      Author: wfcan
  */
 
-#include "MakeSeuss.hpp"
+#include "makeSeuss.hpp"
+#include "hashMap.hpp"
+#include <iostream>
 #include <stdlib.h>
+#include <string>
 #include <fstream>
+
+using namespace std;
 
 makeSeuss::makeSeuss(string f1, string f2, bool h1, bool c1) {
 	ht = new hashMap(h1, c1);
@@ -24,11 +29,11 @@ void makeSeuss::readFile() {
 	ht->first = key;
 	while (infile >> value) { // loop getting single characters
 		cout << key << ": " << value << endl;
-		//ht->addKeyValue(key, value);
+		ht->addKeyValue(key, value);
 		key = value;
 		value = "";
 	}
-	//ht->addKeyValue(key, value);
+	ht->addKeyValue(key, value);
 	cout << endl;
 	infile.close();
 }
@@ -36,7 +41,7 @@ void makeSeuss::writeFile() {
 	ofstream outfile(newfile.c_str(), ios::out);
 	outfile << ht->first << " ";
 	string key = "";
-	string value = "s";//ht->map[ht->getIndex(ht->first)]->getRandValue();
+	string value = ht->map[ht->getIndex(ht->first)]->getRandValue();
 	int ct = 0;
 	int len = 0;
 	while (ct < 500 && value != "") {
@@ -47,9 +52,8 @@ void makeSeuss::writeFile() {
 			len = 0;
 		} else
 			len++;
-		//value = ht->map[ht->getIndex(key)]->getRandValue();
+		value = ht->map[ht->getIndex(key)]->getRandValue();
 		ct++;
 	}
 	outfile.close();
 }
-

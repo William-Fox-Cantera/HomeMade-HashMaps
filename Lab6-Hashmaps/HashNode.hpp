@@ -22,7 +22,7 @@ class hashNode {
 	/*
 	 *  If this set of words gets to be larger than the valuesSize of the array, then you must re-allocate the array double in size and copy
 	 *  over all the old values
-	*/
+	 */
 
 	int valuesSize; // the size of the values array
 	int currSize; // the number of words in the values array so far
