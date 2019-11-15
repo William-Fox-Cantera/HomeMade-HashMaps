@@ -104,8 +104,6 @@ string hashNode::getRandValue() {
 		int randomIndex = rand() % currSize;
 		stringToReturn = values[randomIndex];
 	}
-
-
 	return stringToReturn;
 }
 

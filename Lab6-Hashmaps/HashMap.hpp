@@ -29,9 +29,9 @@ public:
 	int numKeys;
 	int mapSize;
 	bool h1; // if true, first hash function used, otherwise second hash function is used
-	bool c1; //if true, first collision method used, otherwise second collision method is used.
-	int collisionct1; //count of original collisions (caused by the hashing function used)
-	int collisionct2; //count of secondary collisions (caused by the collision handling method used)
+	bool c1; // if true, first collision method used, otherwise second collision method is used.
+	int collisionct1; // count of original collisions (caused by the hashing function used)
+	int collisionct2; // count of secondary collisions (caused by the collision handling method used)
 
 //public:
 	hashMap(bool hash1, bool coll1); // when creating the map, make sure you initialize the values to NULL
@@ -65,10 +65,10 @@ public:
 
 	void reHash(); // when size of array is at 70%, double array size and rehash keys
 
-	int collHash1(int i, string k); // getting index with collision method 1 (note – you may modify the
+	int collHash1(int i, hashNode **aMap, string k); // getting index with collision method 1 (note – you may modify the
 										   // parameters if you don’t need some/need more)
 
-	int collHash2(int i, string k); // getting index with collision method 2 (note – you may modify the
+	int collHash2(int i, hashNode **aMap2, string k); // getting index with collision method 2 (note – you may modify the
 										   // parameters if you don’t need some/need more)
 
 	int findKey(string k); // finds the key in the array and returns its index. If it's not in the array,
