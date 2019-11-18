@@ -105,41 +105,42 @@ int hashMap::getIndex(string k) {
 }
 
 /*
- * calcHash, hash function 1. I made this function sum the ascii values of each character in the string
- * 			 then mod by the mapSize.
+ * calcHash, hash function 1. I made this function sum the ascii values of each character in the string, multiply it by
+ * 			  a prime for better results, then mod by the mapSize.
  *
  * Consumes: A string
  * Produces: An integer
  */
 int hashMap::calcHash(string k) {
-	int sum = 0;
-	int hashValue;
+	int kSize = k.size();
+	int hashValue = 0;
+	int prime = 47;
 
-	for (char letter : k) {
-		sum = sum + letter;
+	for (int i = 0; i < kSize; i++) {
+		// Cast the character at i to int (its ascii value)
+		hashValue += prime * int(k[i]);
 	}
-	hashValue = sum % mapSize;
-	return hashValue;
+	return hashValue % mapSize;
 }
 
 /*
- * calcHash2, hash function 2, This one multiplies the ascii values of the first and last characters of the string, then the 2nd and len-1
- * 							   and so on. Once these are summed up it mods by the map size.
+ * calcHash2, hash function 2, This hashing function is similar to the first in that it adds the ascii values of each
+ * 							   letter in the string, but adds it to two bit manipulated versions of the hash value from
+ * 							   the previous iteration. The first hashValue << 5 is the same as multiplying by 5 and >> 2
+ * 							   which is is dividing by two. This sum is tantamount to using a prime to ensure fewer collisions.
  *
  * Consumes: A string
  * Produces: An integer
  */
 int hashMap::calcHash2(string k) {
 	int kSize = k.size();
-	int hashValue = 0;
+	unsigned int hashValue = 0;
 
 	for (int i = 0; i < kSize; i++) {
-		// Cast the character at i to int (its ascii value)
-		hashValue = hashValue + ((int(k[i]) * int(k[kSize-i-1])));
+		   hashValue ^= (hashValue << 5) + (hashValue >> 2) + int(k[i]);
 	}
-	cout << "HashValue: " << hashValue << endl;
-	hashValue = abs(hashValue) % mapSize;
-	return hashValue;
+	// cout << "HASH: " << hashValue % mapSize << endl;
+	return hashValue % mapSize;
 }
 
 /*
@@ -238,12 +239,10 @@ void hashMap::reHash() {
  */
 int hashMap::collHash1(int i, hashNode **aMap, string k) {
 	while (aMap[i] != NULL) {
-		if (i == mapSize) {
+		if (i >= mapSize) {
 			i = 0;
 		}
-		i++;
-
-		// Keep track of secondary collisions caused by this collision handling function
+		i += 1;
 		collisionct2++;
 	}
 	return i;
@@ -281,15 +280,16 @@ int hashMap::collHash2(int i, hashNode **aMap2, string k) {
  */
 int hashMap::findKey(string k) {
 	int indexToReturn = -1;
-	int startingIndex = getIndex(k);
+	int startingIndex = getIndex(k); // Remember getIndex returns the hash value of the keyword
 
 	if (map[startingIndex] != NULL) {
 		if (map[startingIndex]->keyword == k) {
 			// If the index returned from the get index funtion is the correct one on the first try
 			indexToReturn = startingIndex;
 		} else {
-			while (map[startingIndex] != NULL) {
+			while (map[startingIndex] != NULL) { // Loop until the data is found in the collision cluster
 				if (map[startingIndex]->keyword == k) {
+					indexToReturn = startingIndex;
 					break;
 				}
 				startingIndex++;
@@ -307,20 +307,17 @@ int hashMap::findKey(string k) {
  * Produces: Nothing
  */
 void hashMap::printMap() {
-	int count = 0;
 	for (int i = 0; i < mapSize; i++) {
 		if (map[i] != NULL) {
 			cout << "Key: " << map[i]->keyword << endl;
 			for (int j = 0; j < map[i]->currSize; j++) {
 				cout << "Value(s): " << map[i]->values[j] << endl;
 			}
-			count++;
 			cout << endl;
 		}
 	}
-	cout << "Collisions caused by the hash function: " << collisionct1 << endl;
-	cout << "Collisions caused by the collision handling function: " << collisionct2 << endl;
-	cout << "Count: " << count << endl;
+//	cout << "Collisions caused by the hash function: " << collisionct1 << endl;
+//	cout << "Collisions caused by the collision handling function: " << collisionct2 << endl;
 }
 
 
