@@ -15,7 +15,7 @@
  * Produces: a hashmap
  */
 hashMap::hashMap(bool hash1, bool coll1) {
-	first = "the";
+	first = "";
 	numKeys = 0;
 	mapSize = 10;
 	getClosestPrime(); // Sets the mapSize attribute to the prime closest to double the current mapSize
@@ -55,17 +55,13 @@ void hashMap::addKeyValue(string k, string v) {
 	if (map[index] == NULL) {
 		map[index] = newNode;
 		map[index]->addValue(v);
+		numKeys++;
 	} else if (map[index]->keyword == k) {
-
-		// Add to the counter that keeps track of collisions caused by the hash function
-		collisionct1++;
-
 		map[index]->addValue(v);
-	} else { // If the index in the map is not empty and has a different keyword
-
 		// Add to the counter that keeps track of collisions caused by the hash function
 		collisionct1++;
-
+	} else { // If the index in the map is not empty and has a different keyword
+		collisionct1++;
 		int newIndex;
 		if (c1) { // If the constructor says to use the first collision function
 			newIndex = collHash1(index, map, k);
@@ -76,14 +72,16 @@ void hashMap::addKeyValue(string k, string v) {
 		if (map[newIndex] == NULL) {
 			map[newIndex] = newNode;
 			map[newIndex]->addValue(v);
+			numKeys++;
 		} else { // If the new index has the same key value
 			map[newIndex]->addValue(v);
 		}
 	}
-
-	numKeys++;
-	// Double the size and reHash if over 70% full
-	reHash();
+	// ReHash if over 70% full
+	double percentFull = double(numKeys) / double(mapSize);
+	if (percentFull > .7) {
+		reHash();
+	}
 }
 
 /*
@@ -106,7 +104,7 @@ int hashMap::getIndex(string k) {
 
 /*
  * calcHash, hash function 1. I made this function sum the ascii values of each character in the string, multiply it by
- * 			  a prime for better results, then mod by the mapSize.
+ * 			 a prime for better results, then mod by the mapSize.
  *
  * Consumes: A string
  * Produces: An integer
@@ -114,20 +112,17 @@ int hashMap::getIndex(string k) {
 int hashMap::calcHash(string k) {
 	int kSize = k.size();
 	int hashValue = 0;
-	int prime = 47;
 
 	for (int i = 0; i < kSize; i++) {
 		// Cast the character at i to int (its ascii value)
-		hashValue += prime * int(k[i]);
+		hashValue += 31 * int(k[i]);
 	}
 	return hashValue % mapSize;
 }
 
 /*
  * calcHash2, hash function 2, This hashing function is similar to the first in that it adds the ascii values of each
- * 							   letter in the string, but adds it to two bit manipulated versions of the hash value from
- * 							   the previous iteration. The first hashValue << 5 is the same as multiplying by 5 and >> 2
- * 							   which is is dividing by two. This sum is tantamount to using a prime to ensure fewer collisions.
+ * 							   letter in the string, but also multiplys by a prime and divides by 2.
  *
  * Consumes: A string
  * Produces: An integer
@@ -135,11 +130,11 @@ int hashMap::calcHash(string k) {
 int hashMap::calcHash2(string k) {
 	int kSize = k.size();
 	unsigned int hashValue = 0;
+	int prime = 5;
 
 	for (int i = 0; i < kSize; i++) {
-		   hashValue ^= (hashValue << 5) + (hashValue >> 2) + int(k[i]);
+		   hashValue ^= (hashValue << prime) + (hashValue >> 2) + int(k[i]);
 	}
-	// cout << "HASH: " << hashValue % mapSize << endl;
 	return hashValue % mapSize;
 }
 
@@ -193,41 +188,37 @@ void hashMap::getClosestPrime() {
  * Produces: Nothing
  */
 void hashMap::reHash() {
-	// If the map is over 70% full double the size
-	double percentFull = double(numKeys) / double(mapSize);
-	if (percentFull > .7) {
-		int tempSize = mapSize;
-		// Increases the map size to double then take the closest prime
-		getClosestPrime();
+	int tempSize = mapSize;
+	// Increases the map size to double then take the closest prime
+	getClosestPrime();
 
-		// Fill in the new map will NULL
-		hashNode **tempMap = new hashNode*[mapSize];
-		for (int i = 0; i < mapSize; i++) {
-			tempMap[i] = NULL;
-		}
-		// Go through each spot in the old map and rehash its elements to the new map
-		for (int i = 0; i < tempSize; i++) {
-			if (map[i] != NULL) {
-				// Rehashing, remember the hash will be done using the new larger map size.
-				int index = getIndex(map[i]->keyword);
+	// Fill in the new map will NULL
+	hashNode **tempMap = new hashNode*[mapSize];
+	for (int i = 0; i < mapSize; i++) {
+		tempMap[i] = NULL;
+	}
+	// Go through each spot in the old map and rehash its elements to the new map
+	for (int i = 0; i < tempSize; i++) {
+		if (map[i] != NULL) {
+			// Rehashing, remember the hash will be done using the new larger map size.
+			int index = getIndex(map[i]->keyword);
 
-				// Handling Collisions
-				if (tempMap[index] == NULL) {
-					tempMap[index] = map[i];
-				} else {
-					if (c1) { // Uses linear probing
-						index = collHash1(index, tempMap, "");
-					} else { // Uses quadratic probing
-						index = collHash2(index, tempMap, "");
-					}
-					tempMap[index] = map[i];
+			// Handling Collisions
+			if (tempMap[index] == NULL) {
+				tempMap[index] = map[i];
+			} else {
+				if (c1) { // Uses linear probing
+					index = collHash1(index, tempMap, ""); // Note the "" argument for the collision handling, there would be no
+				} else { // Uses quadratic probing		   // duplicate keys as this is just copying the current map values into
+					index = collHash2(index, tempMap, ""); // a bigger map. So no need to worry in this case.
 				}
+				tempMap[index] = map[i];
 			}
 		}
-		// Get rid of the old map and set map equal to the new dynamically allocated double size map.
-		delete [] map;
-		map = tempMap;
 	}
+	// Get rid of the old map and set map equal to the new dynamically allocated double size map.
+	delete[] map;
+	map = tempMap;
 }
 
 /*
@@ -239,10 +230,16 @@ void hashMap::reHash() {
  */
 int hashMap::collHash1(int i, hashNode **aMap, string k) {
 	while (aMap[i] != NULL) {
+		// Exit the loop and save the index if the keywords match
+		if (aMap[i]->keyword == k) {
+			break;
+		}
+		// If the collisions reach the end of the map go back to the beginning and keep trying
 		if (i >= mapSize) {
 			i = 0;
 		}
 		i += 1;
+		// Keep track of secondary collisions caused by this collision handling function
 		collisionct2++;
 	}
 	return i;
@@ -256,15 +253,19 @@ int hashMap::collHash1(int i, hashNode **aMap, string k) {
  * Produces: An integer
  */
 int hashMap::collHash2(int i, hashNode **aMap2, string k) {
+	int j = 1;
 	while (aMap2[i] != NULL) {
-		int j = 1;
-		if (i >= mapSize) {
-			int temp = i - mapSize;
-			i = temp;
+		// Exit the loop and save the index if the keywords match
+		if (aMap2[i]->keyword == k) {
+			break;
 		}
+		// start back at the ~beginning, that is (index - mapLength) and keep trying for a valid location
 		i += j * j;
+		if (i >= mapSize) {
+			i -= mapSize;
+			j = 1;
+		}
 		j++;
-
 		// Keep track of secondary collisions caused by this collision handling function
 		collisionct2++;
 	}
@@ -279,25 +280,29 @@ int hashMap::collHash2(int i, hashNode **aMap2, string k) {
  *	Produces: an integer
  */
 int hashMap::findKey(string k) {
-	int indexToReturn = -1;
-	int startingIndex = getIndex(k); // Remember getIndex returns the hash value of the keyword
-
+	int newIndex = -1; // returns -1 if the key is not in the map
+	int startingIndex = getIndex(k);
 	if (map[startingIndex] != NULL) {
 		if (map[startingIndex]->keyword == k) {
 			// If the index returned from the get index funtion is the correct one on the first try
-			indexToReturn = startingIndex;
-		} else {
-			while (map[startingIndex] != NULL) { // Loop until the data is found in the collision cluster
+			return startingIndex;
+		}
+		while (map[startingIndex] != NULL) { // Loop until the data is found in the collision cluster
+			if (c1) {
 				if (map[startingIndex]->keyword == k) {
-					indexToReturn = startingIndex;
+					newIndex = startingIndex;
 					break;
 				}
-				startingIndex++;
+				if (startingIndex >= mapSize) { // if collisions forced the data to loop back to the beginning of the map
+					startingIndex = 0; // keep searching from the beginning while there are still collisions
+				}
+			} else { // If the second collision handling function is to be used, that is quadratic probing
+				newIndex += startingIndex * startingIndex;
 			}
+			startingIndex++;
 		}
 	}
-
-	return indexToReturn;
+	return newIndex;
 }
 
 /*
@@ -316,8 +321,8 @@ void hashMap::printMap() {
 			cout << endl;
 		}
 	}
-//	cout << "Collisions caused by the hash function: " << collisionct1 << endl;
-//	cout << "Collisions caused by the collision handling function: " << collisionct2 << endl;
+	cout << "Collisions caused by the hash function: " << collisionct1 << endl;
+	cout << "Collisions caused by the collision handling function: " << collisionct2 << endl;
 }
 
 

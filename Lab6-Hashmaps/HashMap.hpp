@@ -33,7 +33,6 @@ public:
 	int collisionct1; // count of original collisions (caused by the hashing function used)
 	int collisionct2; // count of secondary collisions (caused by the collision handling method used)
 
-//public:
 	hashMap(bool hash1, bool coll1); // when creating the map, make sure you initialize the values to NULL
 // so you know whether that index has a key in it or not already. The Boolean values initialize the h1 and the c1
 // boolean values, making it easier to control which hash and which collision methods you use.
