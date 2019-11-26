@@ -22,7 +22,6 @@ int main() {
 	makeSeuss seussTwo("DrSeuss.txt", "Hash1,Coll2", true, false);
     makeSeuss seussThree("DrSeuss.txt", "Hash2,Coll1", false, true);
 	makeSeuss seussFour("DrSeuss.txt", "Hash2,Coll2", false, false);
-	seussTwo.ht->printMap();
 
 	// UNCOMMENT TO SEE TESTS FOR findKey AND printMap
 //	string keys[20] = {"planet", "no", "screen", "yes", "hello", "robot", "pencil", "worm", "computer",

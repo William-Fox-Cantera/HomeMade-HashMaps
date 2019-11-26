@@ -103,37 +103,38 @@ int hashMap::getIndex(string k) {
 }
 
 /*
- * calcHash, hash function 1. I made this function sum the ascii values of each character in the string, multiply it by
- * 			 a prime for better results, then mod by the mapSize.
+ * calcHash, hash function 1. This hash function takes the sum of the ascii values of each character, and also adds to it
+ * 							  the hash value itself but with its bits logically shifted left six times then subtracts the
+ * 							  current hash value.
  *
  * Consumes: A string
  * Produces: An integer
  */
 int hashMap::calcHash(string k) {
 	int kSize = k.size();
-	int hashValue = 0;
+    unsigned long int hashValue = 0;
 
 	for (int i = 0; i < kSize; i++) {
 		// Cast the character at i to int (its ascii value)
-		hashValue += 31 * int(k[i]);
+		hashValue = ((hashValue << 6) - hashValue) + int(k[i]);
 	}
 	return hashValue % mapSize;
 }
 
 /*
- * calcHash2, hash function 2, This hashing function is similar to the first in that it adds the ascii values of each
- * 							   letter in the string, but also multiplys by a prime and divides by 2.
+ * calcHash2, hash function 2, This hashing function takes the sum of the ascii values of each character in the string and
+ * 							   multiplies each of them by 31 to the power of 1 + 2 + 3 + ... + string length
  *
  * Consumes: A string
  * Produces: An integer
  */
 int hashMap::calcHash2(string k) {
 	int kSize = k.size();
-	unsigned int hashValue = 0;
-	int prime = 5;
+	unsigned long int hashValue = 0;
+	int prime = 31;
 
 	for (int i = 0; i < kSize; i++) {
-		   hashValue ^= (hashValue << prime) + (hashValue >> 2) + int(k[i]);
+		   hashValue += pow(prime, i) * int(k[i]);
 	}
 	return hashValue % mapSize;
 }
@@ -283,21 +284,23 @@ int hashMap::findKey(string k) {
 	int newIndex = -1; // returns -1 if the key is not in the map
 	int startingIndex = getIndex(k);
 	if (map[startingIndex] != NULL) {
-		if (map[startingIndex]->keyword == k) {
-			// If the index returned from the get index funtion is the correct one on the first try
+		if (map[startingIndex]->keyword == k) { // If the first calculated index is the location of the key, then it's done
 			return startingIndex;
 		}
 		while (map[startingIndex] != NULL) { // Loop until the data is found in the collision cluster
-			if (c1) {
-				if (map[startingIndex]->keyword == k) {
-					newIndex = startingIndex;
-					break;
+			if (map[startingIndex]->keyword == k) {
+				newIndex = startingIndex;
+				break;
+			}
+			if (c1) { // This finds the key if the linear probing was used
+				if (startingIndex >= mapSize) {
+					startingIndex = 0;
 				}
-				if (startingIndex >= mapSize) { // if collisions forced the data to loop back to the beginning of the map
-					startingIndex = 0; // keep searching from the beginning while there are still collisions
-				}
-			} else { // If the second collision handling function is to be used, that is quadratic probing
+			} else { // This finds the key if it was inserted using qudartic probing
 				newIndex += startingIndex * startingIndex;
+				if (startingIndex >= mapSize) {
+					startingIndex -= mapSize;
+				}
 			}
 			startingIndex++;
 		}
@@ -321,8 +324,8 @@ void hashMap::printMap() {
 			cout << endl;
 		}
 	}
-	cout << "Collisions caused by the hash function: " << collisionct1 << endl;
-	cout << "Collisions caused by the collision handling function: " << collisionct2 << endl;
+	cout << "ct1: " << collisionct1 << endl;
+	cout << "ct2: " << collisionct2 << endl;
 }
 
 
